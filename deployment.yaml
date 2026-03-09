@@ -1,0 +1,32 @@
+apiVersion: apps/vl 
+kind: Deployment 
+metadata:
+  name: java-app
+spec:
+  replicas: 2 
+  selector:
+    matchLabels:
+      app: java-app
+  template:
+    metadata:
+      Labels:
+        app: java-app
+    spec:
+      containers:
+        name: java-app
+        image: YOUR_DOCKER_HUB_USERNAME/java-app:latest 
+        ports:
+          containerPort: 8080
+
+apiVersion: v1
+kind: Service 
+metadata:
+  name: java-app-service
+spec:
+  selector:
+    app: java-app
+ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+type: LoadBalancer
