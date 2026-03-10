@@ -11,4 +11,10 @@ service:
   targetPort: 8080
   nodePort: 30007
 
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  releaseLabel: monitoring
+  interval: 15s
+
 resources: {}

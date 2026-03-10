@@ -4,6 +4,7 @@ metadata:
   name: {{ include "java-app.fullname" . }}-service
   labels:
     app: {{ include "java-app.name" . }}
+    release: {{ .Values.serviceMonitor.releaseLabel }}
 spec:
   type: {{ .Values.service.type }}
   selector:
@@ -14,3 +15,7 @@ spec:
       targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       nodePort: {{ .Values.service.nodePort }}
+    - name: metrics
+      port: {{ .Values.service.targetPort }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP

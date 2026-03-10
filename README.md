@@ -17,9 +17,10 @@ This repository now includes the baseline pipeline plus the requested production
 7. Deploy to Kubernetes and wait for rollout
 
 ## Added Components
-- `helm/java-app/*`: Helm chart for app deployment/service
+- `helm/java-app/*`: Helm chart for app deployment/service plus optional ServiceMonitor
 - `argocd/java-app-application.yaml`: Argo CD Application for GitOps sync
 - `monitoring/kube-prometheus-stack-values.yaml`: Prometheus/Grafana values
+- `monitoring/java-app-servicemonitor.yaml`: ServiceMonitor for direct manifest workflow
 - `monitoring/README.md`: install and access instructions
 
 ## Jenkins Credentials Required
@@ -48,6 +49,18 @@ helm repo update
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   -n monitoring --create-namespace \
   -f monitoring/kube-prometheus-stack-values.yaml
+```
+
+Apply app ServiceMonitor for non-Helm app deploy path:
+
+```bash
+kubectl apply -f monitoring/java-app-servicemonitor.yaml
+```
+
+Validate scrape in Prometheus with query:
+
+```text
+up{job=~".*java-app.*"}
 ```
 
 ## Local Validation Commands
