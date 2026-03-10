@@ -47,13 +47,13 @@ pipeline {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           withSonarQubeEnv('sonarqube-server') {
             script {
-              docker.image('maven:3.9.9-eclipse-temurin-17').inside('-v $HOME/.m2:/root/.m2') {
+              docker.image('maven:3.9.9-eclipse-temurin-17').inside('--network ci_network -v $HOME/.m2:/root/.m2') {
                 sh '''
                   mvn -B verify sonar:sonar \
                     -DskipTests \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                     -Dsonar.projectName=${APP_NAME} \
-                    -Dsonar.host.url=${SONAR_HOST_URL} \
+                    -Dsonar.host.url=http://sonarqube:9000 \
                     -Dsonar.token=${SONAR_TOKEN}
                 '''
               }
