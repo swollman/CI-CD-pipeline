@@ -37,7 +37,7 @@ pipeline {
       steps {
         script {
           docker.image('maven:3.9.13-amazoncorretto-11').inside {
-            sh 'mvn -B test'
+            sh 'mvn -B clean test'
           }
         }
       }
@@ -50,7 +50,7 @@ pipeline {
             script {
               docker.image('maven:3.9.13-amazoncorretto-8').inside('--network ci_network') {
                 sh '''
-                  mvn -B verify sonar:sonar \
+                  mvn -B clean verify sonar:sonar \
                     -DskipTests \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                     -Dsonar.projectName=${APP_NAME} \
