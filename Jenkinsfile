@@ -23,30 +23,42 @@ pipeline {
       }
     }
 
-    stage('Build (Agent Java 17)') {
+    stage('Build (Java 17)') {
       steps {
-        sh 'mvn -B -DskipTests clean package'
+        script {
+          docker.image('maven:3.9.13-amazoncorretto-17').inside {
+            sh 'mvn -B -DskipTests clean package'
+          }
+        }
       }
     }
 
-    stage('Unit Test (Agent Java 17)') {
+    stage('Unit Test (Java 11)') {
       steps {
-        sh 'mvn -B test'
+        script {
+          docker.image('maven:3.9.13-amazoncorretto-11').inside {
+            sh 'mvn -B test'
+          }
+        }
       }
     }
 
-    stage('Static Analysis (SonarQube)') {
+    stage('Static Analysis (SonarQube + Java 8)') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           withSonarQubeEnv('sonarqube-server') {
-            sh '''
-              mvn -B verify sonar:sonar \
-                -DskipTests \
-                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                -Dsonar.projectName=${APP_NAME} \
-                -Dsonar.host.url=http://localhost:9000 \
-                -Dsonar.token=${SONAR_TOKEN}
-            '''
+            script {
+              docker.image('maven:3.9.13-amazoncorretto-8').inside('--network ci_network') {
+                sh '''
+                  mvn -B verify sonar:sonar \
+                    -DskipTests \
+                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                    -Dsonar.projectName=${APP_NAME} \
+                    -Dsonar.host.url=http://sonarqube:9000 \
+                    -Dsonar.token=${SONAR_TOKEN}
+                '''
+              }
+            }
           }
         }
       }
