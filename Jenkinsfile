@@ -43,14 +43,22 @@ pipeline {
       }
     }
 
-    stage('Static Analysis (SonarQube + Java 8)') {
+    stage('Static Analysis (Java 8 + SonarQube)') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           withSonarQubeEnv('sonarqube-server') {
             script {
               docker.image('maven:3.9.13-amazoncorretto-8').inside('--network ci_network') {
                 sh '''
-                  mvn -B clean verify sonar:sonar \
+                  mvn -B clean verify \
+                    -DskipTests \
+                    -Dmaven.compiler.source=1.8 \
+                    -Dmaven.compiler.target=1.8
+                '''
+              }
+              docker.image('maven:3.9.13-amazoncorretto-11').inside('--network ci_network') {
+                sh '''
+                  mvn -B sonar:sonar \
                     -DskipTests \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                     -Dsonar.projectName=${APP_NAME} \
