@@ -4,7 +4,7 @@ pipeline {
   environment {
     APP_NAME = 'java-app'
     REGISTRY = 'docker.io'
-    IMAGE_REPO = 'ZEROZONEZ/java-app'
+    IMAGE_REPO = 'zerozonez/java-app'
     IMAGE_TAG = "${env.BUILD_NUMBER}"
     IMAGE = "${REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}"
     SONAR_PROJECT_KEY = 'java-app'
