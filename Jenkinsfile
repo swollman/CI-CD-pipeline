@@ -92,12 +92,17 @@ pipeline {
 
     stage('Deploy to Kubernetes') {
       steps {
-        sh '''
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl set image deployment/java-app java-app=${IMAGE} --record
-          kubectl rollout status deployment/java-app
-        '''
+        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+          sh '''
+            kubectl config current-context
+            kubectl get nodes
+            minikube image load ${IMAGE} || true
+            kubectl apply -f k8s/deployment.yaml
+            kubectl apply -f k8s/service.yaml
+            kubectl set image deployment/java-app java-app=${IMAGE}
+            kubectl rollout status deployment/java-app
+          '''
+        }
       }
     }
   }

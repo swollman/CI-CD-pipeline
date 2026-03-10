@@ -17,7 +17,7 @@ spec:
       containers:
       - name: java-app
         image: docker.io/zerozonez/java-app:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
         readinessProbe:
