@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: java-app
-        image: docker.io/your-dockerhub-username/java-app:latest
+        image: docker.io/zerozonez/java-app:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
