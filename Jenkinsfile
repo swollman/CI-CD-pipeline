@@ -94,6 +94,7 @@ pipeline {
             -v "${TRIVY_CACHE_DIR}":/root/.cache/trivy \
             -v "$PWD":/src \
             aquasec/trivy:latest fs \
+            --scanners vuln \
             --severity HIGH,CRITICAL --no-progress --exit-code 0 /src
         '''
       }
@@ -107,6 +108,7 @@ pipeline {
             -v "${TRIVY_CACHE_DIR}":/root/.cache/trivy \
             -v /var/run/docker.sock:/var/run/docker.sock \
             aquasec/trivy:latest image \
+            --scanners vuln \
             --severity HIGH,CRITICAL --no-progress --exit-code 0 ${IMAGE}
         '''
       }
