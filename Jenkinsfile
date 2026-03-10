@@ -8,6 +8,7 @@ pipeline {
     IMAGE_TAG = "${env.BUILD_NUMBER}"
     IMAGE = "${REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}"
     SONAR_PROJECT_KEY = 'java-app'
+    TRIVY_CACHE_DIR = '/Users/swollman/jenkins-agent/trivy-cache'
   }
 
   options {
@@ -68,7 +69,11 @@ pipeline {
     stage('Trivy Filesystem Scan') {
       steps {
         sh '''
-          docker run --rm -v "$PWD":/src aquasec/trivy:latest fs \
+          mkdir -p "${TRIVY_CACHE_DIR}"
+          docker run --rm \
+            -v "${TRIVY_CACHE_DIR}":/root/.cache/trivy \
+            -v "$PWD":/src \
+            aquasec/trivy:latest fs \
             --severity HIGH,CRITICAL --no-progress --exit-code 0 /src
         '''
       }
@@ -77,7 +82,11 @@ pipeline {
     stage('Trivy Image Scan') {
       steps {
         sh '''
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+          mkdir -p "${TRIVY_CACHE_DIR}"
+          docker run --rm \
+            -v "${TRIVY_CACHE_DIR}":/root/.cache/trivy \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
             --severity HIGH,CRITICAL --no-progress --exit-code 0 ${IMAGE}
         '''
       }
