@@ -4,7 +4,7 @@ pipeline {
   environment {
     APP_NAME = 'java-app'
     REGISTRY = 'docker.io'
-    IMAGE_REPO = 'your-dockerhub-username/java-app'
+    IMAGE_REPO = 'ZEROZONEZ/java-app'
     IMAGE_TAG = "${env.BUILD_NUMBER}"
     IMAGE = "${REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}"
     SONAR_PROJECT_KEY = 'java-app'
@@ -32,22 +32,22 @@ pipeline {
       }
     }
 
-    stage('Unit Test (Java 11)') {
+    stage('Unit Test (Java 17)') {
       steps {
         script {
-          docker.image('maven:3.9.9-eclipse-temurin-11').inside('-v $HOME/.m2:/root/.m2') {
+          docker.image('maven:3.9.9-eclipse-temurin-17').inside('-v $HOME/.m2:/root/.m2') {
             sh 'mvn -B test'
           }
         }
       }
     }
 
-    stage('Static Analysis (Java 8 + SonarQube)') {
+    stage('Static Analysis (Java 17 + SonarQube)') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           withSonarQubeEnv('sonarqube-server') {
             script {
-              docker.image('maven:3.8.8-openjdk-8').inside('-v $HOME/.m2:/root/.m2') {
+              docker.image('maven:3.9.9-eclipse-temurin-17').inside('-v $HOME/.m2:/root/.m2') {
                 sh '''
                   mvn -B verify sonar:sonar \
                     -DskipTests \
