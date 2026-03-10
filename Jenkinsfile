@@ -1,6 +1,6 @@
 pipeline {
   agent { label 'docker-agent' }
-  
+
   environment {
     APP_NAME = 'java-app'
     REGISTRY = 'docker.io'
@@ -22,42 +22,30 @@ pipeline {
       }
     }
 
-    stage('Build (Java 17)') {
+    stage('Build (Agent Java 17)') {
       steps {
-        script {
-          docker.image('maven:3.9.9-eclipse-temurin-17').inside('-v $HOME/.m2:/root/.m2') {
-            sh 'mvn -B -DskipTests clean package'
-          }
-        }
+        sh 'mvn -B -DskipTests clean package'
       }
     }
 
-    stage('Unit Test (Java 17)') {
+    stage('Unit Test (Agent Java 17)') {
       steps {
-        script {
-          docker.image('maven:3.9.9-eclipse-temurin-17').inside('-v $HOME/.m2:/root/.m2') {
-            sh 'mvn -B test'
-          }
-        }
+        sh 'mvn -B test'
       }
     }
 
-    stage('Static Analysis (Java 17 + SonarQube)') {
+    stage('Static Analysis (SonarQube)') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           withSonarQubeEnv('sonarqube-server') {
-            script {
-              docker.image('maven:3.9.9-eclipse-temurin-17').inside('--network ci_network -v $HOME/.m2:/root/.m2') {
-                sh '''
-                  mvn -B verify sonar:sonar \
-                    -DskipTests \
-                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                    -Dsonar.projectName=${APP_NAME} \
-                    -Dsonar.host.url=http://sonarqube:9000 \
-                    -Dsonar.token=${SONAR_TOKEN}
-                '''
-              }
-            }
+            sh '''
+              mvn -B verify sonar:sonar \
+                -DskipTests \
+                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                -Dsonar.projectName=${APP_NAME} \
+                -Dsonar.host.url=http://localhost:9000 \
+                -Dsonar.token=${SONAR_TOKEN}
+            '''
           }
         }
       }
@@ -74,6 +62,24 @@ pipeline {
     stage('Build Docker Image') {
       steps {
         sh 'docker build -t ${IMAGE} .'
+      }
+    }
+
+    stage('Trivy Filesystem Scan') {
+      steps {
+        sh '''
+          docker run --rm -v "$PWD":/src aquasec/trivy:latest fs \
+            --severity HIGH,CRITICAL --no-progress --exit-code 0 /src
+        '''
+      }
+    }
+
+    stage('Trivy Image Scan') {
+      steps {
+        sh '''
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image \
+            --severity HIGH,CRITICAL --no-progress --exit-code 0 ${IMAGE}
+        '''
       }
     }
 

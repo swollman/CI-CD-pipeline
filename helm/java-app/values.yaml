@@ -1,0 +1,14 @@
+replicaCount: 2
+
+image:
+  repository: docker.io/zerozonez/java-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8080
+  nodePort: 30007
+
+resources: {}
