@@ -1,6 +1,6 @@
 pipeline {
-  agent any
-
+  agent { label 'docker-agent' }
+  
   environment {
     APP_NAME = 'java-app'
     REGISTRY = 'docker.io'
